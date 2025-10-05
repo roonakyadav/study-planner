@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/study-planner/static/css/main.fa3eaa2c.css",
+    "main.js": "/study-planner/static/js/main.097b66e5.js",
+    "index.html": "/study-planner/index.html",
+    "main.fa3eaa2c.css.map": "/study-planner/static/css/main.fa3eaa2c.css.map",
+    "main.097b66e5.js.map": "/study-planner/static/js/main.097b66e5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fa3eaa2c.css",
+    "static/js/main.097b66e5.js"
+  ]
+}
