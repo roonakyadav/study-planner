@@ -7,7 +7,7 @@ const defaultData = {
       id: '1',
       title: 'Complete React Assignment',
       description: 'Build a todo app with React hooks',
-      deadline: '2025-01-27',
+      dueDate: new Date('2025-01-27T10:00:00').toISOString(),
       priority: 'high',
       category: 'Programming',
       status: 'in-progress',
@@ -17,7 +17,7 @@ const defaultData = {
       id: '2',
       title: 'Study JavaScript Closures',
       description: 'Review closures and lexical scoping',
-      deadline: '2025-01-28',
+      dueDate: new Date('2025-01-28T10:00:00').toISOString(),
       priority: 'medium',
       category: 'Programming',
       status: 'pending',
@@ -27,7 +27,7 @@ const defaultData = {
       id: '3',
       title: 'Read Chapter 5 - Data Structures',
       description: 'Complete algorithms textbook chapter',
-      deadline: '2025-01-26',
+      dueDate: new Date('2025-01-26T10:00:00').toISOString(),
       priority: 'high',
       category: 'Computer Science',
       status: 'completed',
@@ -101,7 +101,9 @@ export const addTask = (task) => {
   const newTask = {
     ...task,
     id: Date.now().toString(),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    // ensure dueDate is saved as a valid ISO timestamp or null
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null
   };
   data.tasks.push(newTask);
   saveData(data);
@@ -112,7 +114,12 @@ export const updateTask = (taskId, updates) => {
   const data = getData();
   const taskIndex = data.tasks.findIndex(task => task.id === taskId);
   if (taskIndex !== -1) {
-    data.tasks[taskIndex] = { ...data.tasks[taskIndex], ...updates };
+    // if updates include dueDate, convert to ISO so storage is consistent
+    const safeUpdates = { ...updates };
+    if (safeUpdates.dueDate) {
+      safeUpdates.dueDate = new Date(safeUpdates.dueDate).toISOString();
+    }
+    data.tasks[taskIndex] = { ...data.tasks[taskIndex], ...safeUpdates };
     saveData(data);
     return data.tasks[taskIndex];
   }

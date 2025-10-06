@@ -13,11 +13,12 @@ const AddTaskModal = ({ onTaskAdded }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    deadline: '',
+    dueDate: '',
     priority: 'medium',
     category: '',
     status: 'pending'
   });
+
   const { toast } = useToast();
 
   const handleSubmit = (e) => {
@@ -32,7 +33,7 @@ const AddTaskModal = ({ onTaskAdded }) => {
       return;
     }
 
-    if (!formData.deadline) {
+    if (!formData.dueDate) {
       toast({
         title: "Error",
         description: "Deadline is required",
@@ -41,21 +42,30 @@ const AddTaskModal = ({ onTaskAdded }) => {
       return;
     }
 
+
     try {
-      const newTask = addTask(formData);
+      // convert dueDate to ISO string
+      const newTask = addTask({
+        ...formData,
+        deadline: new Date(formData.dueDate).toISOString()  // normalize deadline
+      });
+
       toast({
         title: "Success",
         description: "Task added successfully!"
       });
 
+
       setFormData({
         title: '',
         description: '',
-        deadline: '',
+        dueDate: '',    // stays as input state only
         priority: 'medium',
         category: '',
         status: 'pending'
       });
+
+
 
       setOpen(false);
       if (onTaskAdded) onTaskAdded(newTask);
@@ -120,18 +130,24 @@ const AddTaskModal = ({ onTaskAdded }) => {
               className="bg-black/20 border-white/10 text-white placeholder-gray-400 mt-1 min-h-[80px]"
             />
           </div>
-
           <div>
-            <Label htmlFor="deadline" className="text-white">Deadline *</Label>
-            <Input
-              id="deadline"
-              name="deadline"
-              type="date"
-              value={formData.deadline}
-              onChange={handleChange}
-              className="bg-black/20 border-white/10 text-white mt-1"
-              required
-            />
+            <Label htmlFor="dueDate" className="text-white">Deadline *</Label>
+            <div className="relative">
+              <Input
+                id="dueDate"
+                name="dueDate"
+                type="datetime-local"
+                value={formData.dueDate}
+                onChange={handleChange}
+                className="bg-black/20 border-white/10 text-white mt-1 pr-10
+                            [&::-webkit-calendar-picker-indicator]:absolute 
+                            [&::-webkit-calendar-picker-indicator]:right-3
+                            [&::-webkit-calendar-picker-indicator]:cursor-pointer
+                            [&::-webkit-calendar-picker-indicator]:invert
+                            [&::-webkit-calendar-picker-indicator]:opacity-100"
+                required
+              />
+            </div>
           </div>
 
           <div>

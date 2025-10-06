@@ -39,9 +39,15 @@ const Calendar = () => {
   };
 
   const getTasksForDate = (date) => {
-    const dateString = date.toISOString().split('T')[0];
-    return tasks.filter(task => task.deadline === dateString);
+    const dateString = date.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    return tasks.filter(task => {
+      if (!task.dueDate) return false;
+      const taskDate = new Date(task.dueDate);
+      const taskDay = taskDate.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+      return taskDay === dateString;
+    });
   };
+
 
   const navigateMonth = (direction) => {
     const newDate = new Date(currentDate);
@@ -78,15 +84,13 @@ const Calendar = () => {
         <div
           key={day}
           onClick={() => setSelectedDate(date)}
-          className={`h-20 p-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-white/10 ${
-            isSelected 
-              ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400' 
-              : 'bg-white/5'
-          } ${isToday ? 'ring-2 ring-blue-400' : ''}`}
+          className={`h-20 p-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-white/10 ${isSelected
+            ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400'
+            : 'bg-white/5'
+            } ${isToday ? 'ring-2 ring-blue-400' : ''}`}
         >
-          <div className={`text-sm font-medium mb-1 ${
-            isToday ? 'text-blue-400' : 'text-white'
-          }`}>
+          <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-400' : 'text-white'
+            }`}>
             {day}
           </div>
           {dayTasks.length > 0 && (
@@ -94,11 +98,10 @@ const Calendar = () => {
               {dayTasks.slice(0, 2).map((task) => (
                 <div
                   key={task.id}
-                  className={`text-xs px-1 py-0.5 rounded truncate ${
-                    task.priority === 'high' ? 'bg-red-500/30 text-red-300' :
+                  className={`text-xs px-1 py-0.5 rounded truncate ${task.priority === 'high' ? 'bg-red-500/30 text-red-300' :
                     task.priority === 'medium' ? 'bg-yellow-500/30 text-yellow-300' :
-                    'bg-green-500/30 text-green-300'
-                  }`}
+                      'bg-green-500/30 text-green-300'
+                    }`}
                 >
                   {task.title}
                 </div>
@@ -217,11 +220,15 @@ const Calendar = () => {
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-5 h-5 text-purple-400" />
                 <h3 className="text-lg font-semibold text-white">
-                  {selectedDate.toLocaleDateString('en-US', {
+                  {selectedDate.toLocaleDateString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
                     month: 'long',
                     day: 'numeric',
-                    year: 'numeric'
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
+
                 </h3>
               </div>
               {selectedDateTasks.length > 0 && (
@@ -242,34 +249,60 @@ const Calendar = () => {
                   <div key={task.id} className="p-3 bg-white/5 rounded-lg">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="text-white font-medium text-sm">{task.title}</h4>
-                      <Badge className={`text-xs ${
-                        task.priority === 'high' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                        task.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
-                        'bg-green-500/20 text-green-300 border-green-500/30'
-                      }`}>
+                      <Badge
+                        className={`text-xs ${task.priority === "high"
+                            ? "bg-red-500/20 text-red-300 border-red-500/30"
+                            : task.priority === "medium"
+                              ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+                              : "bg-green-500/20 text-green-300 border-green-500/30"
+                          }`}
+                      >
                         {task.priority}
                       </Badge>
                     </div>
+
                     {task.description && (
                       <p className="text-gray-400 text-xs mb-2">{task.description}</p>
                     )}
+
+                    {task.dueDate && (
+                      <p className="text-gray-400 text-xs mb-2">
+                        Due:{" "}
+                        {new Date(task.dueDate).toLocaleString("en-IN", {
+                          timeZone: "Asia/Kolkata",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    )}
+
                     <div className="flex items-center gap-4 text-xs">
                       {task.category && (
-                        <Badge variant="outline" className="text-purple-300 border-purple-500/30">
+                        <Badge
+                          variant="outline"
+                          className="text-purple-300 border-purple-500/30"
+                        >
                           {task.category}
                         </Badge>
                       )}
-                      <Badge className={`${
-                        task.status === 'completed' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                        task.status === 'in-progress' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                        'bg-orange-500/20 text-orange-300 border-orange-500/30'
-                      }`}>
-                        {task.status.replace('-', ' ')}
+                      <Badge
+                        className={`${task.status === "completed"
+                            ? "bg-green-500/20 text-green-300 border-green-500/30"
+                            : task.status === "in-progress"
+                              ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                              : "bg-orange-500/20 text-orange-300 border-orange-500/30"
+                          }`}
+                      >
+                        {task.status.replace("-", " ")}
                       </Badge>
                     </div>
                   </div>
                 ))}
               </div>
+
             )}
           </Card>
         </div>

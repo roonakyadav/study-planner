@@ -55,16 +55,19 @@ const Dashboard = () => {
         variant: "destructive"
       });
     }
-    
+
     // Reset file input
     event.target.value = '';
   };
 
   const todaysTasks = tasks.filter(task => {
-    const today = new Date().toDateString();
-    const taskDate = new Date(task.deadline).toDateString();
-    return taskDate === today;
+    if (!task.dueDate && !task.deadline) return false;
+    const rawDate = task.dueDate || task.deadline;
+    const due = new Date(rawDate);
+    if (isNaN(due)) return false;
+    return due.toDateString() === new Date().toDateString();
   });
+
 
   const completedTasks = tasks.filter(task => task.status === 'completed');
   const completionRate = tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0;
@@ -83,15 +86,15 @@ const Dashboard = () => {
         <div className="flex gap-4 items-center">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input 
-              placeholder="Search tasks..." 
+            <Input
+              placeholder="Search tasks..."
               className="pl-10 bg-black/20 border-white/10 text-white placeholder-gray-400"
             />
           </div>
-          <Button 
+          <Button
             onClick={handleExport}
-            variant="outline" 
-            size="sm" 
+            variant="outline"
+            size="sm"
             className="border-white/20 text-white hover:bg-white/10"
           >
             <Download className="w-4 h-4 mr-2" />
@@ -106,9 +109,9 @@ const Dashboard = () => {
               id="import-file-dashboard"
             />
             <label htmlFor="import-file-dashboard">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="border-white/20 text-white hover:bg-white/10"
                 asChild
               >
@@ -185,10 +188,9 @@ const Dashboard = () => {
             ) : (
               todaysTasks.slice(0, 5).map((task) => (
                 <div key={task.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                  <div className={`w-3 h-3 rounded-full ${
-                    task.priority === 'high' ? 'bg-red-500' :
+                  <div className={`w-3 h-3 rounded-full ${task.priority === 'high' ? 'bg-red-500' :
                     task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                  }`}></div>
+                    }`}></div>
                   <div className="flex-1">
                     <p className="text-white text-sm font-medium">{task.title}</p>
                     <p className="text-gray-400 text-xs">{task.category}</p>
@@ -205,23 +207,27 @@ const Dashboard = () => {
           <div className="space-y-3">
             {tasks
               .filter(task => task.status !== 'completed')
-              .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+              .sort((a, b) => new Date(a.dueDate || a.deadline) - new Date(b.dueDate || b.deadline))
               .slice(0, 5)
               .map((task) => (
                 <div key={task.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                  <div className={`w-3 h-3 rounded-full ${
-                    task.priority === 'high' ? 'bg-red-500' :
-                    task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                  }`}></div>
+                  <div className={`w-3 h-3 rounded-full ${task.priority === 'high' ? 'bg-red-500' :
+                      task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    }`}></div>
                   <div className="flex-1">
                     <p className="text-white text-sm font-medium">{task.title}</p>
                     <p className="text-gray-400 text-xs">
-                      Due: {new Date(task.deadline).toLocaleDateString()}
+                      Due: {(() => {
+                        const rawDate = task.dueDate || task.deadline;
+                        const d = new Date(rawDate);
+                        return isNaN(d) ? "Invalid Date" : d.toLocaleDateString();
+                      })()}
                     </p>
                   </div>
                 </div>
               ))
             }
+
           </div>
         </Card>
 
@@ -234,11 +240,10 @@ const Dashboard = () => {
             ) : (
               habits.slice(0, 5).map((habit) => (
                 <div key={habit.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    habit.completedToday 
-                      ? 'bg-gradient-to-r from-green-400 to-emerald-400 border-green-400' 
-                      : 'border-gray-600'
-                  }`}>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${habit.completedToday
+                    ? 'bg-gradient-to-r from-green-400 to-emerald-400 border-green-400'
+                    : 'border-gray-600'
+                    }`}>
                     {habit.completedToday && <CheckCircle className="w-4 h-4 text-white" />}
                   </div>
                   <div className="flex-1">

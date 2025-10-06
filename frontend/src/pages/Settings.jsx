@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Moon, 
-  Sun, 
-  Bell, 
-  Download, 
-  Upload, 
-  Trash2, 
+import {
+  Moon,
+  Sun,
+  Bell,
+  Download,
+  Upload,
+  Trash2,
   Save,
   BarChart3,
   Clock,
@@ -17,16 +17,16 @@ import { Switch } from '../components/ui/switch';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useToast } from '../hooks/use-toast';
-import { 
-  getTimerSettings, 
-  updateTimerSettings, 
-  getSettings, 
-  updateSettings, 
-  getTasks, 
-  getHabits, 
-  exportData, 
-  importData, 
-  clearAllData 
+import {
+  getTimerSettings,
+  updateTimerSettings,
+  getSettings,
+  updateSettings,
+  getTasks,
+  getHabits,
+  exportData,
+  importData,
+  clearAllData
 } from '../utils/localStorage';
 
 const Settings = ({ darkMode, setDarkMode }) => {
@@ -97,7 +97,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
         variant: "destructive"
       });
     }
-    
+
     // Reset file input
     event.target.value = '';
   };
@@ -115,12 +115,20 @@ const Settings = ({ darkMode, setDarkMode }) => {
   };
 
   const saveTimerSettings = () => {
-    updateTimerSettings(timerSettings);
+    const cleaned = {
+      focusTime: Number(timerSettings.focusTime) || 25,
+      shortBreak: Number(timerSettings.shortBreak) || 5,
+      longBreak: Number(timerSettings.longBreak) || 15,
+      sessionsUntilLongBreak: Number(timerSettings.sessionsUntilLongBreak) || 4
+    };
+    updateTimerSettings(cleaned);
+    setTimerSettings(cleaned); // normalize back into state
     toast({
       title: "Settings saved",
       description: "Timer settings have been updated."
     });
   };
+
 
   const handleNotificationsChange = (enabled) => {
     setNotifications(enabled);
@@ -152,8 +160,8 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 <Label className="text-white">Dark Mode</Label>
                 <p className="text-sm text-gray-400">Toggle between light and dark theme</p>
               </div>
-              <Switch 
-                checked={darkMode} 
+              <Switch
+                checked={darkMode}
                 onCheckedChange={setDarkMode}
               />
             </div>
@@ -172,8 +180,8 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 <Label className="text-white">Enable Notifications</Label>
                 <p className="text-sm text-gray-400">Get alerts for timer completion and reminders</p>
               </div>
-              <Switch 
-                checked={notifications} 
+              <Switch
+                checked={notifications}
                 onCheckedChange={handleNotificationsChange}
               />
             </div>
@@ -191,8 +199,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
               <Label className="text-white">Focus Session (minutes)</Label>
               <Input
                 type="number"
+                min={1}
                 value={timerSettings.focusTime}
-                onChange={(e) => setTimerSettings({...timerSettings, focusTime: parseInt(e.target.value) || 25})}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setTimerSettings(s => ({ ...s, focusTime: v === '' ? '' : Number(v) }));
+                }}
                 className="mt-1 bg-black/20 border-white/10 text-white"
               />
             </div>
@@ -200,8 +212,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
               <Label className="text-white">Short Break (minutes)</Label>
               <Input
                 type="number"
+                min={1}
                 value={timerSettings.shortBreak}
-                onChange={(e) => setTimerSettings({...timerSettings, shortBreak: parseInt(e.target.value) || 5})}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setTimerSettings(s => ({ ...s, shortBreak: v === '' ? '' : Number(v) }));
+                }}
                 className="mt-1 bg-black/20 border-white/10 text-white"
               />
             </div>
@@ -209,8 +225,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
               <Label className="text-white">Long Break (minutes)</Label>
               <Input
                 type="number"
+                min={1}
                 value={timerSettings.longBreak}
-                onChange={(e) => setTimerSettings({...timerSettings, longBreak: parseInt(e.target.value) || 15})}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setTimerSettings(s => ({ ...s, longBreak: v === '' ? '' : Number(v) }));
+                }}
                 className="mt-1 bg-black/20 border-white/10 text-white"
               />
             </div>
@@ -218,12 +238,16 @@ const Settings = ({ darkMode, setDarkMode }) => {
               <Label className="text-white">Sessions Until Long Break</Label>
               <Input
                 type="number"
+                min={1}
                 value={timerSettings.sessionsUntilLongBreak}
-                onChange={(e) => setTimerSettings({...timerSettings, sessionsUntilLongBreak: parseInt(e.target.value) || 4})}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setTimerSettings(s => ({ ...s, sessionsUntilLongBreak: v === '' ? '' : Number(v) }));
+                }}
                 className="mt-1 bg-black/20 border-white/10 text-white"
               />
             </div>
-            <Button 
+            <Button
               onClick={saveTimerSettings}
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white w-full"
             >
@@ -233,6 +257,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
           </div>
         </Card>
 
+
         {/* Data Management */}
         <Card className="bg-black/20 backdrop-blur-xl border-white/10 p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -240,15 +265,15 @@ const Settings = ({ darkMode, setDarkMode }) => {
             Data Management
           </h3>
           <div className="space-y-4">
-            <Button 
+            <Button
               onClick={handleExportData}
-              variant="outline" 
+              variant="outline"
               className="w-full border-white/20 text-white hover:bg-white/10"
             >
               <Download className="w-4 h-4 mr-2" />
               Export Data
             </Button>
-            
+
             <div>
               <input
                 type="file"
@@ -258,8 +283,8 @@ const Settings = ({ darkMode, setDarkMode }) => {
                 id="import-file-settings"
               />
               <Label htmlFor="import-file-settings">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full border-white/20 text-white hover:bg-white/10"
                   asChild
                 >
@@ -271,7 +296,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
               </Label>
             </div>
 
-            <Button 
+            <Button
               onClick={handleClearAllData}
               variant="destructive"
               className="w-full"
